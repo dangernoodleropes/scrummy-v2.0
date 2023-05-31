@@ -3,6 +3,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { SocketAddress } = require('net');
 
 const app = express();
 const server = http.Server(app);
@@ -154,6 +155,18 @@ io.on('connection', (socket) => {
     anonNamesArr.push(anonName);
   }
 
+  // client logs in
+  socket.on('logged-in', (googleUser) => {
+    anonNamesObj[socket.id] = googleUser;
+    io.emit('updating-name', anonNamesObj);
+  });
+
+  // client logs off
+  socket.on('logged-out', (newName) => {
+    anonNamesObj[socket.id] = newName;
+    io.emit('updating-name', anonNamesObj);
+  });
+
   // send the tasks saved on this server to the client
   socket.emit('load-tasks', storage);
   // emit current online users to frontend
@@ -184,12 +197,12 @@ io.on('connection', (socket) => {
 
     //store it to the first index of storage (TO DO column)
     storage[0].push({
-      author: anonName,
+      author: anonNamesObj[socket.id],
       content,
       uuid: uuid,
     });
     io.emit('add-task', {
-      author: anonName,
+      author: anonNamesObj[socket.id],
       content,
       uuid: uuid,
     });

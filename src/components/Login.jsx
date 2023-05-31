@@ -1,9 +1,10 @@
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import React from "react";
 import jwtDecode from "jwt-decode";
+import {socket} from "../socket";
 
 const Login = (props) => {
-const {user, setUser} = props;
+const {user, setUser, allUsers, setAllUsers} = props;
 
 let anonNames = [
   'alligator',
@@ -91,15 +92,18 @@ let anonNames = [
 ];
 
   const handleSuccess = (credentialRes) => {
-    const userObj = jwtDecode(credentialRes.credential);
-    console.log(userObj);
-    setUser(userObj.name);
+    const googleUser = jwtDecode(credentialRes.credential);
+    console.log(googleUser);
+    setUser(googleUser.name);
+    socket.emit('logged-in', googleUser.name);
   }
 
     const handleLogout = () => {
     googleLogout();
     const rndNm = Math.round(Math.random() * anonNames.length)
-    setUser(anonNames[rndNm]);
+    const newName = anonNames[rndNm]
+    setUser(newName);
+    socket.emit('logged-out', newName)
   };
 
   return (

@@ -62,6 +62,10 @@ const App = () => {
       });
     }
 
+    function onUpdateName(usersObj) {
+      setAllUsers(usersObj)
+    }
+
     function onAddTask(newTask) {
       setTasks((tasks) => {
         const newTasks = structuredClone(tasks);
@@ -163,6 +167,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
+    socket.on('updating-name', onUpdateName);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -200,7 +205,7 @@ const App = () => {
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
-        <Login user={user} setUser={setUser}/>
+        <Login user={user} setUser={setUser} allUsers={allUsers} setAllUsers={setAllUsers}/>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
