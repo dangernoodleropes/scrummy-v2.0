@@ -5,44 +5,35 @@ import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 10px;
-  background-color: #ffffff;
-  background-image: linear-gradient(
-      rgba(0, 0, 0, 0.05) 0.1em,
-      transparent 0.1em
-    ),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
-  background-size: 0.7em 0.7em;
-  border-bottom: 2px solid black;
-`;
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Title = styled.h1`
-  font-family: 'Abril Fatface', cursive;
-  font-size: 2.2rem;
-`;
-
-const Board = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-`;
-
-const HEADERS = ['To Do', 'In Progress', 'Complete', 'Reviewed'];
 
 const App = () => {
+  const [CardCollectionsArr, setCardCollectionsArr] = useState([]);
+  const [dragging, setDragging] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  ////////
   const [tasks, setTasks] = useState([[], [], [], []]);
   const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
 
+
+
+
+
+
   useEffect(() => {
+
+    function addCardReturn (newCard) {
+      CardCollections[newCard.uuid] = newCard;
+      setCardCollectionsArr((CardCollectionsArr) => {
+        let newCardCollectionsArr = [...CardCollectionsArr, newCard];
+        console.log(newCardCollectionsArr);
+        return newCardCollectionsArr;
+      })
+    };
+
+
     function onLoadTasks(tasks) {
       console.log('ON LOAD TASKS');
       console.log(tasks);
@@ -58,14 +49,6 @@ const App = () => {
       setAllUsers((allUsers) => {
         delete allUsers[socketId];
         return allUsers;
-      });
-    }
-
-    function onAddTask(newTask) {
-      setTasks((tasks) => {
-        const newTasks = structuredClone(tasks);
-        newTasks[0].push(newTask);
-        return newTasks;
       });
     }
 
@@ -158,7 +141,8 @@ const App = () => {
     socket.on('load-tasks', onLoadTasks);
     socket.on('user-connected', onUserConnected);
     socket.on('user-disconnected', onUserDisconnected);
-    socket.on('add-task', onAddTask);
+    //Generate a new Card
+    socket.on('add-card-Return', addCardReturn);
     socket.on('delete-task', onDeleteTask);
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
@@ -166,10 +150,10 @@ const App = () => {
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
     return () => {
-      socket.off('load-tasks', onLoadTasks);
-      socket.off('user-connected', onUserConnected);
-      socket.off('user-disconnected', onUserDisconnected);
-      socket.off('add-task', onAddTask);
+      // socket.off('load-tasks', onLoadTasks);
+      // socket.off('user-connected', onUserConnected);
+      // socket.off('user-disconnected', onUserDisconnected);
+      socket.off('add-card-Return', addCardReturn);
       socket.off('delete-task', onDeleteTask);
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
@@ -177,20 +161,51 @@ const App = () => {
   }, [allUsers]);
 
   function handleAddTask(content) {
-    socket.emit('add-task', content);
+    socket.emit('add-card', content);
   }
 
   function handleDeleteTask(uuid) {
     socket.emit('delete-task', uuid);
   }
 
-  function handleMoveTaskLeft(uuid) {
-    socket.emit('move-task-left', uuid);
-  }
+  const CardCollections = {};
 
-  function handleMoveTaskRight(uuid) {
-    socket.emit('move-task-right', uuid);
-  }
+  ////////////////////////////////////////////////////////mouseMove Card////////////////////
+  ////////////////////////////////////////////////////////mouseMove Card////////////////////
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      if (!dragging) return;
+      const newX = event.clientX - offset.x;
+      const newY = event.clientY - offset.y;
+      setPosition({ x: newX, y: newY });
+      //telling server that the card is moving
+      socket.emit('cardIsMoving', { x: newX, y: newY });
+    };
+
+    const handleMouseUp = () => {
+      setDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging, offset]);
+
+  const handleMouseDown = (event) => {
+    setDragging(true);
+    const offsetX = event.clientX - position.x;
+    const offsetY = event.clientY - position.y;
+    setOffset({ x: offsetX, y: offsetY });
+  };
+  ////////////////////////////////////////////////////////mouseMove Card////////////////////
+  ////////////////////////////////////////////////////////mouseMove Card////////////////////
+  
+
+
 
   return (
     <main>
@@ -202,21 +217,68 @@ const App = () => {
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
-        {tasks.map((columnTasks, i) => (
-          <Column
-            key={`col_${i}`}
-            header={HEADERS[i]}
-            columnTasks={columnTasks}
-            handleDeleteTask={handleDeleteTask}
-            handleMoveTaskLeft={handleMoveTaskLeft}
-            handleMoveTaskRight={handleMoveTaskRight}
-            disableLeft={i === 0}
-            disableRight={i === tasks.length - 1}
-          />
+        {CardCollectionsArr.map((_, index) => (
+          <div 
+          className='taskCard'
+          key={`_${index}`}
+            style={{
+              border: '2px solid black',
+              backgroundColor: 'white',
+              boxShadow: '5px 5px black',
+              margin: '10px',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              backgroundSize: '0.7em 0.7em',
+              position: 'absolute',
+              left: position.x,
+              top: position.y,
+              width: '300px',
+              height: '120px',
+              cursor: dragging ? 'grabbing' : 'grab',
+            }}
+            onMouseDown={handleMouseDown}
+          ></div>
         ))}
+        
       </Board>
     </main>
   );
 };
+
+
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px;
+  background-color: #ffffff;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.05) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
+  background-size: 0.7em 0.7em;
+  border-bottom: 2px solid black;
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Title = styled.h1`
+  font-family: 'Abril Fatface', cursive;
+  font-size: 2.2rem;
+`;
+
+const Board = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+`;
+
+const HEADERS = ['To Do', 'In Progress', 'Complete', 'Reviewed'];
 
 export default App;
