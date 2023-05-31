@@ -58,7 +58,7 @@ const DeleteButton = styled.button`
   }
 `;
 
-const Comments = styled.li`
+const Comments = styled.input`
 
 `
 
@@ -88,7 +88,7 @@ const TaskCard = ({
 const [text, setText] = useState('');
 
 const handleSubmit = e => {
-  // e.preventDefault();
+  e.preventDefault();
   const content = text.trim();
   if(!content) return;
   // invocation for function/socket connection in App.jsx
@@ -97,27 +97,35 @@ const handleSubmit = e => {
 }
 
   return (
-    <Card>
+<Card>
       <span>{content}</span>
       <div>
         <span>author:&nbsp;</span>
         <Name>{author}</Name>
+        
         <ul>
+        <span>Task Notes: </span>
           {comments.map((point, i) => {
-            {console.log(point)}
-          <Comments key={i}>{point}</Comments>
-        })}
+            return (
+              <li key={i}>
+                {point}
+              </li>
+            );
+          })}
         </ul>
-          <input 
-          type = 'text'
-          placeholder='add comments here...'
-          value = {text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmit();
-          }}
+
+        <TaskForm onSubmit={handleSubmit}>
+          <Comments
+            type="text"
+            placeholder="add comments here..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit(e);
+            }}
           />
-            <button type="submit" onClick={handleSubmit}>Save</button>
+          <button type="submit">Save</button>
+        </TaskForm>
       </div>
 
       {reviewedBy && (
