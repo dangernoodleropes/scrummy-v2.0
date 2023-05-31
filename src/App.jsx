@@ -4,6 +4,7 @@ import OnlineUsers from './components/OnlineUsers';
 import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
+import Login from './components/Login';
 
 const Header = styled.div`
   display: flex;
@@ -199,6 +200,7 @@ const App = () => {
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
+        <Login user={user} setUser={setUser}/>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
