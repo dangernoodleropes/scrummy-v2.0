@@ -41,6 +41,8 @@ const App = () => {
   const [tasks, setTasks] = useState([[], [], [], []]);
   const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
+  //
+  
 
  //useEffect hook is used to define  a side effect that will be executed after the component renders  
   useEffect(() => {
@@ -72,6 +74,7 @@ const App = () => {
       setTasks((tasks) => {
         const newTasks = structuredClone(tasks);
         newTasks[0].push(newTask);
+        console.log('newTasks',newTask[0])
         return newTasks;
       });
     }
@@ -169,7 +172,20 @@ const App = () => {
 
     // TODO:create function onAddComment, used to handle when new comment is added
 
-
+    function onAddComment({uuid, content}) {
+      setTasks((tasks) => {
+        let newTasks = structuredClone(tasks);
+        for (let i = 0; i < newTasks.length; i++){
+          for (let j = 0; j < newTasks[i].length; j++){
+            if (newTasks[i][j].uuid === uuid){
+              newTasks[i][j].comments.push(content);
+            }
+          }
+        }
+        return newTasks;
+      });
+    }
+  
 
 
     // Register event listeners
@@ -180,7 +196,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
-    socket.on('add-comment', handleAddComment);
+    socket.on('add-task-comment', onAddComment);
     //TODO: add listener for add-comment
 
     // Clean up the event listeners when the component unmounts
@@ -193,7 +209,7 @@ const App = () => {
       socket.off('delete-task', onDeleteTask);
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
-      socket.off('add-task-comment', handleAddComment);
+      socket.off('add-task-comment', onAddComment);
       //TODO: clean up add-comment
     };
   }, [allUsers]);
@@ -215,8 +231,8 @@ const App = () => {
   }
 
   // TODO:add func handleAddComment
-  function handleAddComment(content) {
-    socket.emit('add-task-comment', content);
+  function handleAddComment(content, uuid) {
+    socket.emit('add-task-comment', content, uuid);
   }
 
 

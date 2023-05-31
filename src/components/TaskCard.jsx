@@ -58,6 +58,10 @@ const DeleteButton = styled.button`
   }
 `;
 
+const Comments = styled.li`
+
+`
+
 //form creation on TaskCard
 const TaskForm = styled.form``;
 
@@ -80,16 +84,15 @@ const TaskCard = ({
   disableLeft = false,
   disableRight = false,
 }) => {
-
 //useState to set comments for task form
 const [text, setText] = useState('');
 
 const handleSubmit = e => {
-  e.preventDefault();
+  // e.preventDefault();
   const content = text.trim();
   if(!content) return;
   // invocation for function/socket connection in App.jsx
-  handleAddComment(content);
+  handleAddComment(content, uuid);
   setText('');
 }
 
@@ -99,16 +102,22 @@ const handleSubmit = e => {
       <div>
         <span>author:&nbsp;</span>
         <Name>{author}</Name>
-      {/* map comments */}
-        <TaskForm handleSubmit = {handleSubmit}>
+        <ul>
+          {comments.map((point, i) => {
+            {console.log(point)}
+          <Comments key={i}>{point}</Comments>
+        })}
+        </ul>
           <input 
           type = 'text'
           placeholder='add comments here...'
           value = {text}
           onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSubmit();
+          }}
           />
-            <button type="submit">Save</button>
-        </TaskForm>
+            <button type="submit" onClick={handleSubmit}>Save</button>
       </div>
 
       {reviewedBy && (
