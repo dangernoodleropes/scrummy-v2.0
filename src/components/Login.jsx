@@ -4,7 +4,7 @@ import jwtDecode from "jwt-decode";
 import {socket} from "../socket";
 
 const Login = (props) => {
-const {user, setUser, allUsers, setAllUsers} = props;
+const {user, setUser} = props;
 
 let anonNames = [
   'alligator',

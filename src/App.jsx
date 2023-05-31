@@ -205,7 +205,7 @@ const App = () => {
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
-        <Login user={user} setUser={setUser} allUsers={allUsers} setAllUsers={setAllUsers}/>
+        <Login user={user} setUser={setUser}/>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
