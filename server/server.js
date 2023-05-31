@@ -273,6 +273,13 @@ io.on('connection', (socket) => {
     }
     io.emit('move-task-left', uuid);
   });
+
+  // create listener for 'add-comment'
+  socket.on('add-comment', (content) => {
+
+
+  })
+
 });
 
 server.listen(3000, () => console.log('The server is running at port 3000'));

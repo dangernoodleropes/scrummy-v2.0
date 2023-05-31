@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
 
 const Card = styled.div`
@@ -58,28 +58,57 @@ const DeleteButton = styled.button`
   }
 `;
 
+//form creation on TaskCard
+const TaskForm = styled.form``;
+
 const Name = styled.span`
   font-family: 'Abril Fatface', cursive;
   font-size: 1rem;
 `;
 
+
 const TaskCard = ({
   uuid,
   author,
   content,
+  comments,
   reviewedBy,
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
+  handleAddComment,
   disableLeft = false,
   disableRight = false,
 }) => {
+
+//useState to set comments for task form
+const [text, setText] = useState('');
+
+const handleSubmit = e => {
+  e.preventDefault();
+  const content = text.trim();
+  if(!content) return;
+  // invocation for function/socket connection in App.jsx
+  handleAddComment(content);
+  setText('');
+}
+
   return (
     <Card>
       <span>{content}</span>
       <div>
         <span>author:&nbsp;</span>
         <Name>{author}</Name>
+      {/* map comments */}
+        <TaskForm handleSubmit = {handleSubmit}>
+          <input 
+          type = 'text'
+          placeholder='add comments here...'
+          value = {text}
+          onChange={(e) => setText(e.target.value)}
+          />
+            <button type="submit">Save</button>
+        </TaskForm>
       </div>
 
       {reviewedBy && (
