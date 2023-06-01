@@ -10,6 +10,7 @@ const Container = styled.div`
 const UserList = styled.ul`
   list-style-type: none;
   display: flex;
+  justify-content: center
 `;
 
 const UserIcon = styled.li`

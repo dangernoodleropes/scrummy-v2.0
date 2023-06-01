@@ -279,17 +279,17 @@ io.on('connection', (socket) => {
 
   // create listener for 'add-comment'
   socket.on('add-task-comment', (content, uuid) => {
-    //loop through storage to search for uuid
-      //if matches
-        //update comment prop with content 
 
-      // task = {
-      // name: string
-      // uuid: #
-      // content: task 
-      // comments : [] <---- add content here
-      // }
-      // loop through storage -> [ [{task}], {task2}], [{task3}], [], []]
+  // loop through storage to search for uuid
+    // if matches
+      //update comment prop with content 
+    // task = {
+        // name: string
+        // uuid: #
+        // content: task 
+        // comments : [] <---- add content here
+  // }
+  // loop through storage -> [ [{task}], {task2}], [{task3}], [], []]
 
       for (let i = 0; i < storage.length; i++){
         //storage[0] === [{task}], {task2}]
@@ -303,11 +303,9 @@ io.on('connection', (socket) => {
         // should be no more nested arrays; check if task.uuid === uuid ar
 
       }
-
       io.emit('add-task-comment', {uuid, content});
 
   })
-
 });
 
 server.listen(3000, () => console.log('The server is running at port 3000'));

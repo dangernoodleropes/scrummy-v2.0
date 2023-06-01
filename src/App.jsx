@@ -35,6 +35,26 @@ const Board = styled.div`
   grid-template-columns: 1fr 1fr 1fr 1fr;
 `;
 
+const ProjectButton = styled.button`
+  cursor: pointer;
+  background-color: #61dbdb  ;
+  text-align: center;
+  font-size: 1.5rem;
+  height: 2.5rem;
+  border-radius: 2rem;
+  border: 1px solid black;
+  box-shadow: 2px 2px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms;
+  transform: translate(-2px, -2px);
+  &:hover {
+    transform: translate(0, 0);
+    box-shadow: 0px 0px;
+  }
+`
+
 const HEADERS = ['To Do', 'In Progress', 'Complete', 'Reviewed'];
 
 const App = () => {
@@ -55,6 +75,7 @@ const App = () => {
     //function used to handle the event when a user connected to a socket 
     //when a user is connected, it updates allUsers state with usersObj
     function onUserConnected(usersObj) {
+      console.log('usersObj', usersObj)
       setAllUsers(usersObj);
       setUser(usersObj[socket.id]);
     }
@@ -197,7 +218,6 @@ const App = () => {
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
     socket.on('add-task-comment', onAddComment);
-    //TODO: add listener for add-comment
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -210,7 +230,7 @@ const App = () => {
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
       socket.off('add-task-comment', onAddComment);
-      //TODO: clean up add-comment
+
     };
   }, [allUsers]);
 
@@ -235,6 +255,10 @@ const App = () => {
     socket.emit('add-task-comment', content, uuid);
   }
 
+  function handleProject(id) {
+    // fill logic here: 
+  }
+
 
   return (
     <main>
@@ -242,7 +266,14 @@ const App = () => {
         <Container>
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
+
+          {/* on click: invoke project handler, passing in socket.id or user */}
+          <ProjectButton onClick={handleProject(socket.id)}> 
+              Open Project
+          </ProjectButton>
         </Container>
+       
+        
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
