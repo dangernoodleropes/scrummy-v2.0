@@ -5,7 +5,7 @@ const userController = {};
 userController.addUser = async (req, res, next) => {
   const { username } = req.body;
   try {
-    const already = await User.findOne({ username });
+    const already = await User.findOne({ name: username });
     if (already) {
       next();
     } else {

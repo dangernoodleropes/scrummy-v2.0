@@ -1,25 +1,28 @@
 const express = require('express');
 const app = express();
 const app2 = express();
-const server = require("http").createServer(app);
-const server2 = require("http").createServer(app2);
+const server = require('http').createServer(app);
+const server2 = require('http').createServer(app2);
 // const io = require('socket.io')(server);
 // const io2 = require('socket.io')(server2);
 const mongoose = require('mongoose');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const { disconnect } = require("process");
+const { disconnect } = require('process');
 app.use(express.json());
 app2.use(express.json());
-app2.use('/public', express.static(path.join(__dirname,'../src/jsForWebsockets')));
+app2.use(
+  '/public',
+  express.static(path.join(__dirname, '../src/jsForWebsockets'))
+);
 
 const io = require('socket.io')(server, {
   pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
-  pingInterval: 1000, 
+  pingInterval: 1000,
 });
 const io2 = require('socket.io')(server2, {
   pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
-  pingInterval: 1000, 
+  pingInterval: 1000,
 });
 
 // const io = socketIO(server, {
@@ -27,21 +30,20 @@ const io2 = require('socket.io')(server2, {
 //   pingInterval: 3000, // how many ms before sending a new ping packet
 // });
 
-
 const { SocketAddress } = require('net');
 const anonNames = require('./anonNames.js');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const userRouter = require('./routes/users.js');
+const projectRouter = require('./routes/projects.js');
 
 dotenv.config();
-
-
 
 mongoose.connect(process.env.MONGO_URI).then(console.log('mongodb connected'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use('/users', userRouter);
+app.use('/projects', projectRouter);
 
 // temp storage to store tasks
 var storage = [[], [], [], []];
@@ -79,11 +81,10 @@ const generateUniqueAnonName = () => {
   return anonName;
 };
 
-
 app.use('/', express.static(path.join(__dirname, '../dist')));
 app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
 app2.get('/excalibur', (req, res) => {
-  res.sendFile(path.join(__dirname, "../src/excalibur.html"));
+  res.sendFile(path.join(__dirname, '../src/excalibur.html'));
 });
 
 io.on('connection', (socket) => {
@@ -99,7 +100,7 @@ io.on('connection', (socket) => {
     anonNamesObj[socket.id] = anonName;
     // Store anonName in anonNameArr
     anonNamesArr.push(anonName);
-    console.log(socket.id, anonName)
+    console.log(socket.id, anonName);
   }
 
   // client logs in
@@ -129,35 +130,35 @@ io.on('connection', (socket) => {
     // io.emit('user-disconnected', socket.id);
   });
 
-
-
- 
   socket.on('card-move', (uuid, num) => {
-      taskIndex = storage[storageObj[uuid].arrayIndex].findIndex((task) => task.uuid === uuid);
-      let cacheObj = storage[storageObj[uuid].arrayIndex].splice(taskIndex, 1)[0];
-      storageObj[uuid].arrayIndex = num;
-      storage[num].push(cacheObj);
-      isStorageChanged = true;
+    taskIndex = storage[storageObj[uuid].arrayIndex].findIndex(
+      (task) => task.uuid === uuid
+    );
+    let cacheObj = storage[storageObj[uuid].arrayIndex].splice(taskIndex, 1)[0];
+    storageObj[uuid].arrayIndex = num;
+    storage[num].push(cacheObj);
+    isStorageChanged = true;
   });
 
-////////////////////////////For Excalibur///////////////////////////////
-////////////////////////////////////////////////////////////////////////
-  socket.on('clickColor', (string)=>{
+  ////////////////////////////For Excalibur///////////////////////////////
+  ////////////////////////////////////////////////////////////////////////
+  socket.on('clickColor', (string) => {
     io2.emit('clickColorReturn', string);
   });
   socket.on('EraserColor', (str, num) => {
     io2.emit('EraserColorReturn', str, num);
-  })
-////////////////////////////For Excalibur///////////////////////////////
-////////////////////////////////////////////////////////////////////////
+  });
+  ////////////////////////////For Excalibur///////////////////////////////
+  ////////////////////////////////////////////////////////////////////////
 
-  socket.on('add-task-comment', (content, uuid) => {    
-      taskIndex = storage[storageObj[uuid].arrayIndex].findIndex((task) => task.uuid === uuid);
+  socket.on('add-task-comment', (content, uuid) => {
+    taskIndex = storage[storageObj[uuid].arrayIndex].findIndex(
+      (task) => task.uuid === uuid
+    );
 
-      storage[storageObj[uuid].arrayIndex][taskIndex].comments.push(content);
-      isStorageChanged = true;
-  })
-
+    storage[storageObj[uuid].arrayIndex][taskIndex].comments.push(content);
+    isStorageChanged = true;
+  });
 
   // Listener for the 'greeting-from-client'
   socket.on('add-task', (content) => {
@@ -185,30 +186,30 @@ io.on('connection', (socket) => {
     );
     io.emit('delete-task', uuid);
   });
-
 });
 
-
 ////////////////////////////////////////////////////////////////////////
-let serverUpdate = setInterval(mainUpdate, 1000/60);
+let serverUpdate = setInterval(mainUpdate, 1000 / 60);
 var isStorageChanged = false;
 
-function mainUpdate(){ // 更新 玩家 資訊 Updating the storage information
-  if(isStorageChanged === true){ // 如果玩家player 資料有變動才廣播更新
-      io.emit('playersDataUpdate', storage);
-      isStorageChanged = false;
+function mainUpdate() {
+  // 更新 玩家 資訊 Updating the storage information
+  if (isStorageChanged === true) {
+    // 如果玩家player 資料有變動才廣播更新
+    io.emit('playersDataUpdate', storage);
+    isStorageChanged = false;
   }
 }
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////For Excalibur///////////////////////////////
 io2.on('connection', (socket) => {
   console.log('Drawer connected!');
-  socket.on('draw000', (obj)=>{
+  socket.on('draw000', (obj) => {
     io2.emit('draw000Return', obj);
-  })
-  socket.on('draw001', (obj)=>{
+  });
+  socket.on('draw001', (obj) => {
     io2.emit('draw001Return', obj);
-  })
+  });
 });
 ////////////////////////////For Excalibur///////////////////////////////
 ////////////////////////////////////////////////////////////////////////

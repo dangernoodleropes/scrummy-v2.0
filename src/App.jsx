@@ -7,6 +7,9 @@ import styled from 'styled-components';
 import DrawBar from './components/DrawBar';
 import { ColorButtonRed, ColorButtonBlack, ColorButtonBlue, ColorButtonGreen, ColorButtonYellow, ColorButtonPurple, Earser } from './components/ColorButton';
 import Login from './components/Login';
+import SaveProject from './components/SaveProject';
+import SeeProjects from './components/SeeProjects';
+import LoadProject from './components/LoadProject';
 
 const Header = styled.div`
   display: flex;
@@ -287,9 +290,9 @@ const App = () => {
         <Container>
           <div style = {{ display: 'flex', alignItems: 'center' }}>
             <Title>Scrummy</Title>
-            <ProjectButton style = {{margin: '0px 0px 0px 15px', fontSize: '1rem', width: '10rem'}} onClick={handleProject(socket.id)}> 
-              Save Project
-          </ProjectButton>
+            <SaveProject tasks={tasks} user={user}/>
+            <SeeProjects user={user}/>
+            <LoadProject setTasks={setTasks} user={user}/>
           </div>
           
             <div style = {{ display: 'flex', alignItems: 'center' }}>
