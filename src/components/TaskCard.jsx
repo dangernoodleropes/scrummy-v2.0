@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
 
+
 const Card = styled.div`
   border: 2px solid black;
   background-color: white;
@@ -58,17 +59,25 @@ const DeleteButton = styled.button`
   }
 `;
 
+//TODO: add css styling 
 const Comments = styled.input`
 
 `
 
-//form creation on TaskCard
+//TODO: add css styling 
 const TaskForm = styled.form``;
+
+
+
+//TODO: add css styling 
+const Dropdown = styled.select``;
 
 const Name = styled.span`
   font-family: 'Abril Fatface', cursive;
   font-size: 1rem;
 `;
+
+
 
 
 const TaskCard = ({
@@ -77,6 +86,7 @@ const TaskCard = ({
   content,
   comments,
   reviewedBy,
+  allUsers,
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
@@ -85,7 +95,94 @@ const TaskCard = ({
   disableRight = false,
 }) => {
 //useState to set comments for task form
+
 const [text, setText] = useState('');
+const [assignee, setAssignee] = useState('');
+
+let anonNames = [
+  'alligator',
+  'anteater',
+  'armadillo',
+  'auroch',
+  'axolotl',
+  'badger',
+  'bat',
+  'bear',
+  'beaver',
+  'blobfish',
+  'buffalo',
+  'camel',
+  'chameleon',
+  'cheetah',
+  'chipmunk',
+  'chinchilla',
+  'chupacabra',
+  'cormorant',
+  'coyote',
+  'crow',
+  'dingo',
+  'dinosaur',
+  'dog',
+  'dolphin',
+  'dragon',
+  'duck',
+  'octopus',
+  'elephant',
+  'ferret',
+  'fox',
+  'frog',
+  'giraffe',
+  'goose',
+  'gopher',
+  'grizzly',
+  'hamster',
+  'hedgehog',
+  'hippo',
+  'hyena',
+  'jackal',
+  'jackalope',
+  'ibex',
+  'ifrit',
+  'iguana',
+  'kangaroo',
+  'kiwi',
+  'koala',
+  'kraken',
+  'lemur',
+  'leopard',
+  'liger',
+  'lion',
+  'llama',
+  'manatee',
+  'mink',
+  'monkey',
+  'moose',
+  'narwhal',
+  'nyan cat',
+  'orangutan',
+  'otter',
+  'panda',
+  'penguin',
+  'platypus',
+  'python',
+  'pumpkin',
+  'quagga',
+  'quokka',
+  'rabbit',
+  'raccoon',
+  'rhino',
+  'sheep',
+  'shrew',
+  'skunk',
+  'squirrel',
+  'tiger',
+  'turtle',
+  'unicorn',
+  'walrus',
+  'wolf',
+  'wolverine',
+  'wombat',
+];
 
 const handleSubmit = e => {
   e.preventDefault();
@@ -96,13 +193,24 @@ const handleSubmit = e => {
   setText('');
 }
 
+//TODO: create handleSubmit for assignnee
+
+const handleSubmitAssignee = e => {
+  e.preventDefault();
+}
+
+const handleOptionChange = (e) => {
+  setAssignee(e.target.value);
+};
+
+
   return (
 <Card>
       <span>{content}</span>
       <div>
-        <span>author:&nbsp;</span>
+        <span>Author:&nbsp;</span>
         <Name>{author}</Name>
-        
+        </div>
         <ul>
         <span>Task Notes: </span>
           {comments.map((point, i) => {
@@ -117,7 +225,7 @@ const handleSubmit = e => {
         <TaskForm onSubmit={handleSubmit}>
           <Comments
             type="text"
-            placeholder="add comments here..."
+            placeholder="add task notes here..."
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
@@ -126,7 +234,22 @@ const handleSubmit = e => {
           />
           <button type="submit">Save</button>
         </TaskForm>
+
+        <TaskForm onSubmit={handleSubmitAssignee}>
+      <div>
+        <label htmlFor="allusers-dropdown">Assignee:</label>
+        <Dropdown id="allusers-dropdown" value={assignee} onChange={handleOptionChange}>
+          <option value="">Select</option>
+          {anonNames.map((name, index) => (
+            <option key={index} value={name}>
+              {name}
+            </option>
+          ))}
+        </Dropdown>
       </div>
+      <button type="submit">Save</button>
+    </TaskForm>
+
 
       {reviewedBy && (
         <div>

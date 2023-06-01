@@ -4,6 +4,7 @@ import OnlineUsers from './components/OnlineUsers';
 import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
+import TaskCard from './components/TaskCard';
 
 const Header = styled.div`
   display: flex;
@@ -244,6 +245,8 @@ const App = () => {
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
+
+  
       </Header>
       <Board>
         {tasks.map((columnTasks, i) => (
