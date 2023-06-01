@@ -4,6 +4,7 @@ import OnlineUsers from './components/OnlineUsers';
 import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
+import Login from './components/Login';
 
 const Header = styled.div`
   display: flex;
@@ -59,6 +60,10 @@ const App = () => {
         delete allUsers[socketId];
         return allUsers;
       });
+    }
+
+    function onUpdateName(usersObj) {
+      setAllUsers(usersObj)
     }
 
     function onAddTask(newTask) {
@@ -162,6 +167,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
+    socket.on('updating-name', onUpdateName);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -173,6 +179,7 @@ const App = () => {
       socket.off('delete-task', onDeleteTask);
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
+      socket.off('updating-name', onUpdateName);
     };
   }, [allUsers]);
 
@@ -199,6 +206,7 @@ const App = () => {
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
+        <Login user={user} setUser={setUser}/>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
