@@ -5,6 +5,9 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { SocketAddress } = require('net');
 const anonNames = require('./anonNames.js');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const userRouter = require('./routes/users.js');
 
 const app = express();
 const server = http.Server(app);
@@ -12,6 +15,16 @@ const io = socketIO(server, {
   pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
   pingInterval: 3000, // how many ms before sending a new ping packet
 });
+
+mongoose
+  .connect(
+    `mongodb+srv://t8nero:nAkN76QzgEeaKnst@cluster0.umj2sor.mongodb.net/?retryWrites=true&w=majority`
+  )
+  .then(console.log('mongodb connected'));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/users', userRouter);
 
 // temp storage to store tasks
 let storage = [[], [], [], []];

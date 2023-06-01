@@ -12,11 +12,12 @@ const {user, setUser} = props;
     console.log(googleUser);
     setUser(googleUser.name);
     socket.emit('logged-in', googleUser.name);
-    fetch('/users'), {
+    const username = googleUser.name;
+    fetch('/users', {
       method: 'POST',
       headers:  {'Content-Type': 'application/json'},
-      body: JSON.stringify({googleUser})
-    }
+      body: JSON.stringify({username})
+    }).then(() => console.log('sent'));
   }
 
     const handleLogout = () => {

@@ -54,6 +54,7 @@ module.exports = {
       secure: true,
       changeOrigin: true,
     },
+    compress: true,
   },
 
   performance: {
