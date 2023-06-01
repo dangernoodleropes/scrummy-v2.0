@@ -8,7 +8,7 @@
   </head>
   <body>
     <div>
-      <canvas id="board000" width = '1500' height = '600' style = " background-color: rgba(255, 255, 255, 1); overflow-y: scroll; overflow-x: scroll;"></canvas>
+      <canvas id="board000" width = '1500' height = '640' style = " background-color: rgba(255, 255, 255, 1); overflow-y: scroll; overflow-x: scroll;"></canvas>
     </div>
 
 
@@ -30,6 +30,8 @@
           ctx.beginPath();
           ctx.moveTo(prevX, prevY); 
           ctx.lineTo(x, y); 
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
           ctx.strokeStyle = pColor;
           ctx.lineWidth = thickness;
           ctx.stroke();  

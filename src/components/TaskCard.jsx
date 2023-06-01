@@ -46,6 +46,17 @@ const Button = styled.button`
   }
 `;
 
+const CommentDelete = styled.button`
+cursor: pointer;
+color: #777777;
+background: none;
+border: none;
+transition: color 150ms;
+&:hover {
+  color: red;
+}
+`
+
 const DeleteButton = styled.button`
   cursor: pointer;
   color: #777777;
@@ -59,26 +70,43 @@ const DeleteButton = styled.button`
   }
 `;
 
+const Comments = styled.input`
+
+`
+
+//form creation on TaskCard
+const TaskForm = styled.form``;
+
 const Name = styled.span`
   font-family: 'Abril Fatface', cursive;
   font-size: 1rem;
 `;
 
+
 const TaskCard = ({
   uuid,
   author,
   content,
+  comments,
   reviewedBy,
   handleDeleteTask,
+  handleMoveTaskLeft,
+  handleMoveTaskRight,
+  handleDeleteComment,
+  handleAddComment,
+  disableLeft = false,
+  disableRight = false,
 }) => {
 
   const [dragging, setDragging] = useState(false);
   const [ghostPosition, setGhostPosition] = useState({ x: 0, y: 0 });
   const windowWidth = window.innerWidth;    
+  const [text, setText] = useState('');
 
   useEffect(() => {
     var newX;
     var newY;
+
 
     const handleMouseMove = (event) => {
       if (!dragging) return;
@@ -119,7 +147,24 @@ const TaskCard = ({
   const handleMouseDown = (event) => {
     setDragging(true);
   };
+
+
+//useState to set comments for task form
+const handleSubmit = e => {
+  e.preventDefault();
   
+  const content = text.trim();
+  if(!content) {
+    return;
+  }    
+  setText('');
+  socket.emit('add-task-comment', content, uuid);
+}
+
+const handleDelete = e => {
+  
+}
+
   return (
     <>
     {dragging && (
@@ -161,6 +206,31 @@ const TaskCard = ({
       <div>
         <span>author:&nbsp;</span>
         <Name>{author}</Name>
+        
+        <ul>
+        <span>Task Notes: </span>
+          {comments.map((point, i) => {
+            return (
+              <li key={i}>
+                {point}
+                <CommentDelete onClick={handleDelete(i)}></CommentDelete>
+              </li>
+            );
+          })}
+        </ul>
+
+        <TaskForm onSubmit={handleSubmit}>
+          <Comments
+            type="text"
+            placeholder="add comments here..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit(e);
+            }}
+          />
+          <button type="submit">Save</button>
+        </TaskForm>
       </div>
 
       {reviewedBy && (

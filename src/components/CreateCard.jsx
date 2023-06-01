@@ -38,12 +38,15 @@ const Button = styled.button`
 const CreateCard = ({ handleAddTask }) => {
   const [input, setInput] = useState('');
 
+
   const handleSubmit = () => {
     const content = input.trim();
     if (!content) return;
     handleAddTask(content);
     setInput('');
   };
+
+
 
   return (
     <Container>
@@ -56,6 +59,7 @@ const CreateCard = ({ handleAddTask }) => {
           if (e.key === 'Enter') handleSubmit();
         }}
       />
+
       <Button onClick={handleSubmit}>
         <svg
           xmlns="http://www.w3.org/2000/svg"

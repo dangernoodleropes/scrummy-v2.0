@@ -10,6 +10,7 @@ const Container = styled.div`
 const UserList = styled.ul`
   list-style-type: none;
   display: flex;
+  justify-content: center
 `;
 
 const UserIcon = styled.li`
@@ -32,7 +33,7 @@ const UserIcon = styled.li`
   transition: all 150ms;
   transform: translate(-2px, -2px);
   &:hover {
-    transform: translate(0px, 0px);
+    transform: translate(-3px, -5px);
     box-shadow: 0 0 black;
   }
 `;
