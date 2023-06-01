@@ -13,6 +13,7 @@ const Column = ({
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
+  handleDeleteComment,
   handleAddComment,
   disableLeft,
   disableRight,
@@ -30,6 +31,7 @@ const Column = ({
             handleMoveTaskRight={handleMoveTaskRight}
             disableLeft={disableLeft}
             disableRight={disableRight}
+            handleDeleteComment={handleDeleteComment}
             handleAddComment={handleAddComment}
           />
         ))}

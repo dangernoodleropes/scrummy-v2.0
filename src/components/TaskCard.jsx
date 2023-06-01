@@ -45,6 +45,17 @@ const Button = styled.button`
   }
 `;
 
+const CommentDelete = styled.button`
+cursor: pointer;
+color: #777777;
+background: none;
+border: none;
+transition: color 150ms;
+&:hover {
+  color: red;
+}
+`
+
 const DeleteButton = styled.button`
   cursor: pointer;
   color: #777777;
@@ -80,6 +91,7 @@ const TaskCard = ({
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
+  handleDeleteComment,
   handleAddComment,
   disableLeft = false,
   disableRight = false,
@@ -96,6 +108,10 @@ const handleSubmit = e => {
   setText('');
 }
 
+const handleDelete = e => {
+  
+}
+
   return (
 <Card>
       <span>{content}</span>
@@ -109,6 +125,7 @@ const handleSubmit = e => {
             return (
               <li key={i}>
                 {point}
+                <CommentDelete onClick={handleDelete(i)}></CommentDelete>
               </li>
             );
           })}

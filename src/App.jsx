@@ -255,6 +255,10 @@ const App = () => {
     socket.emit('add-task-comment', content, uuid);
   }
 
+  function handleDeleteComment(uuid, commentid) {
+    socket.emit('delete-comment', uuid, commentid)
+  }
+
   function handleProject(id) {
     // fill logic here: 
   }
@@ -269,7 +273,7 @@ const App = () => {
 
           {/* on click: invoke project handler, passing in socket.id or user */}
           <ProjectButton onClick={handleProject(socket.id)}> 
-              Open Project
+              Save Project
           </ProjectButton>
         </Container>
        
@@ -286,6 +290,7 @@ const App = () => {
             handleMoveTaskLeft={handleMoveTaskLeft}
             handleMoveTaskRight={handleMoveTaskRight}
             handleAddComment={handleAddComment}
+            handleDeleteComment={handleDeleteComment}
             disableLeft={i === 0}
             disableRight={i === tasks.length - 1}
           />
