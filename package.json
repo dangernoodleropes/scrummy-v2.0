@@ -4,7 +4,7 @@
   "description": "Pull request test #1 I added this comment in the Dev branch I added this comment in the Dev branch too",
   "main": "index.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "node server/server.js ",
     "dev": "nodemon server/server.js & NODE_ENV=development webpack-dev-server --hot",
     "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"

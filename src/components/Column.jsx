@@ -7,13 +7,14 @@ const Header = styled.div`
   text-align: center;
   font-size: 2.2rem;
 `;
-
 const Column = ({
   header,
   columnTasks,
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
+  handleDeleteComment,
+  handleAddComment,
   disableLeft,
   disableRight,
 }) => {
@@ -30,6 +31,8 @@ const Column = ({
             handleMoveTaskRight={handleMoveTaskRight}
             disableLeft={disableLeft}
             disableRight={disableRight}
+            handleDeleteComment={handleDeleteComment}
+            handleAddComment={handleAddComment}
           />
         ))}
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import styled from 'styled-components';
 
 const Card = styled.div`
@@ -45,6 +45,17 @@ const Button = styled.button`
   }
 `;
 
+const CommentDelete = styled.button`
+cursor: pointer;
+color: #777777;
+background: none;
+border: none;
+transition: color 150ms;
+&:hover {
+  color: red;
+}
+`
+
 const DeleteButton = styled.button`
   cursor: pointer;
   color: #777777;
@@ -58,28 +69,80 @@ const DeleteButton = styled.button`
   }
 `;
 
+const Comments = styled.input`
+
+`
+
+//form creation on TaskCard
+const TaskForm = styled.form``;
+
 const Name = styled.span`
   font-family: 'Abril Fatface', cursive;
   font-size: 1rem;
 `;
 
+
 const TaskCard = ({
   uuid,
   author,
   content,
+  comments,
   reviewedBy,
   handleDeleteTask,
   handleMoveTaskLeft,
   handleMoveTaskRight,
+  handleDeleteComment,
+  handleAddComment,
   disableLeft = false,
   disableRight = false,
 }) => {
+//useState to set comments for task form
+const [text, setText] = useState('');
+
+const handleSubmit = e => {
+  e.preventDefault();
+  const content = text.trim();
+  if(!content) return;
+  // invocation for function/socket connection in App.jsx
+  handleAddComment(content, uuid);
+  setText('');
+}
+
+const handleDelete = e => {
+  
+}
+
   return (
-    <Card>
+<Card>
       <span>{content}</span>
       <div>
         <span>author:&nbsp;</span>
         <Name>{author}</Name>
+        
+        <ul>
+        <span>Task Notes: </span>
+          {comments.map((point, i) => {
+            return (
+              <li key={i}>
+                {point}
+                <CommentDelete onClick={handleDelete(i)}></CommentDelete>
+              </li>
+            );
+          })}
+        </ul>
+
+        <TaskForm onSubmit={handleSubmit}>
+          <Comments
+            type="text"
+            placeholder="add comments here..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSubmit(e);
+            }}
+          />
+          <button type="submit">Save</button>
+        </TaskForm>
       </div>
 
       {reviewedBy && (

@@ -80,6 +80,7 @@ io.on('connection', (socket) => {
     anonNamesObj[socket.id] = anonName;
     // Store anonName in anonNameArr
     anonNamesArr.push(anonName);
+    console.log(socket.id, anonName)
   }
 
   // client logs in
@@ -126,11 +127,13 @@ io.on('connection', (socket) => {
     storage[0].push({
       author: anonNamesObj[socket.id],
       content,
+      comments: [],
       uuid: uuid,
     });
     io.emit('add-task', {
       author: anonNamesObj[socket.id],
       content,
+      comments: [],
       uuid: uuid,
     });
   });
@@ -213,6 +216,36 @@ io.on('connection', (socket) => {
     }
     io.emit('move-task-left', uuid);
   });
+
+  // create listener for 'add-comment'
+  socket.on('add-task-comment', (content, uuid) => {
+
+  // loop through storage to search for uuid
+    // if matches
+      //update comment prop with content 
+    // task = {
+        // name: string
+        // uuid: #
+        // content: task 
+        // comments : [] <---- add content here
+  // }
+  // loop through storage -> [ [{task}], {task2}], [{task3}], [], []]
+
+      for (let i = 0; i < storage.length; i++){
+        //storage[0] === [{task}], {task2}]
+        // loop through storage[i]
+        for (let j = 0; j < storage[i].length; j++){
+          if (storage[i][j].uuid === uuid){
+            storage[i][j].comments.push(content);
+          }
+        }
+        
+        // should be no more nested arrays; check if task.uuid === uuid ar
+
+      }
+      io.emit('add-task-comment', {uuid, content});
+
+  })
 });
 
 server.listen(3000, () => console.log('The server is running at port 3000'));
