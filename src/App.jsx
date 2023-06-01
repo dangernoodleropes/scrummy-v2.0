@@ -4,6 +4,8 @@ import OnlineUsers from './components/OnlineUsers';
 import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
+import DrawBar from './components/DrawBar';
+import { ColorButtonRed, ColorButtonBlack, ColorButtonBlue, ColorButtonGreen, ColorButtonYellow, ColorButtonPurple, Earser } from './components/ColorButton';
 
 const Header = styled.div`
   display: flex;
@@ -38,11 +40,21 @@ const Board = styled.div`
 const HEADERS = ['To Do', 'In Progress', 'Complete', 'Reviewed'];
 
 const App = () => {
-  const [tasks, setTasks] = useState([[], [], [], []]);
+  var [tasks, setTasks] = useState([[], [], [], []]);
   const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
 
+
+
   useEffect(() => {
+    function storageUpdate(storage){
+      setTasks ((tasks) => {
+        tasks = storage;
+        return tasks;
+      })
+      console.log(tasks);
+    }
+
     function onLoadTasks(tasks) {
       console.log('ON LOAD TASKS');
       console.log(tasks);
@@ -78,81 +90,6 @@ const App = () => {
       });
     }
 
-    function onMoveTaskLeft(uuid) {
-      setTasks((tasks) => {
-        let newTasks = structuredClone(tasks);
-        let foundTask = null;
-        let foundColumnIndex;
-        // find the task with the matching UUID and its current column index
-        for (let i = 0; i < newTasks.length; i++) {
-          // store current column
-          const column = newTasks[i];
-          // store index if uuid is found
-          const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-          // if match was found and in the last column (REVIEWED)...
-          if (taskIndex !== -1 && i == newTasks.length - 1) {
-            // remove the task at the specified index from the column array
-            foundTask = column.splice(taskIndex, 1)[0];
-            // delete the reviewer
-            delete foundTask.reviewedBy;
-            foundColumnIndex = i;
-            break;
-          }
-          // if match was found and not in the first column...store result and column index
-          else if (taskIndex !== -1 && i !== 0) {
-            // remove the task at the specified index from the column array
-            foundTask = column.splice(taskIndex, 1)[0];
-            foundColumnIndex = i;
-            break;
-          }
-        }
-        if (foundTask !== null) {
-          // push foundTask into previous column in storage
-          newTasks[foundColumnIndex - 1].push(foundTask);
-        }
-        return newTasks;
-      });
-    }
-
-    function onMoveTaskRight({ uuid, reviewerId }) {
-      setTasks((tasks) => {
-        let newTasks = structuredClone(tasks);
-        let foundTask = null;
-        let foundColumnIndex;
-        // find the task with the matching UUID and its current column index
-        for (let i = 0; i < newTasks.length; i++) {
-          // store current column
-          const column = newTasks[i];
-          // store index if uuid is found
-          const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-          // if match was found and in the 2nd to last column (COMPLETE)...
-          if (taskIndex !== -1 && i === newTasks.length - 2) {
-            // remove the task at the specified index from the column array
-            foundTask = column.splice(taskIndex, 1)[0];
-            // create a current reviewer in storage
-            console.log('##### REVIEWED BY ######');
-            console.log(reviewerId);
-            foundTask.reviewedBy = allUsers[reviewerId];
-            foundColumnIndex = i;
-            break;
-          }
-          // if match was found and not in the last column...
-          else if (taskIndex !== -1 && i !== newTasks.length - 1) {
-            // remove the task at the specified index from the column array
-            foundTask = column.splice(taskIndex, 1)[0];
-            foundColumnIndex = i;
-            break;
-          }
-        }
-        if (foundTask !== null) {
-          // push foundTask into next column in storage
-          newTasks[foundColumnIndex + 1].push(foundTask);
-        }
-        return newTasks;
-      });
-    }
 
     // Register event listeners
     socket.on('load-tasks', onLoadTasks);
@@ -160,8 +97,7 @@ const App = () => {
     socket.on('user-disconnected', onUserDisconnected);
     socket.on('add-task', onAddTask);
     socket.on('delete-task', onDeleteTask);
-    socket.on('move-task-left', onMoveTaskLeft);
-    socket.on('move-task-right', onMoveTaskRight);
+    socket.on('playersDataUpdate', storageUpdate);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -171,10 +107,17 @@ const App = () => {
       socket.off('user-disconnected', onUserDisconnected);
       socket.off('add-task', onAddTask);
       socket.off('delete-task', onDeleteTask);
-      socket.off('move-task-left', onMoveTaskLeft);
-      socket.off('move-task-right', onMoveTaskRight);
+
     };
   }, [allUsers]);
+
+  // function handleColorSelect(){
+  //   socket.emit('colorClick!', colorClick);
+  // }
+
+
+
+
 
   function handleAddTask(content) {
     socket.emit('add-task', content);
@@ -184,20 +127,22 @@ const App = () => {
     socket.emit('delete-task', uuid);
   }
 
-  function handleMoveTaskLeft(uuid) {
-    socket.emit('move-task-left', uuid);
-  }
+  // function handleMoveTaskLeft(uuid) {
+  //   socket.emit('move-task-left', uuid);
+  // }
 
-  function handleMoveTaskRight(uuid) {
-    socket.emit('move-task-right', uuid);
-  }
+  // function handleMoveTaskRight(uuid) {
+  //   socket.emit('move-task-right', uuid);
+  // }
 
   return (
     <main>
       <Header>
         <Container>
           <Title>Scrummy</Title>
-          <CreateCard handleAddTask={handleAddTask} />
+            <div style = {{ display: 'flex', alignItems: 'center' }}>
+              <CreateCard handleAddTask={handleAddTask} /> <ColorButtonRed /><ColorButtonBlack /><ColorButtonBlue /><ColorButtonGreen /><ColorButtonYellow /><ColorButtonPurple /><Earser />
+            </div>
         </Container>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
@@ -206,15 +151,17 @@ const App = () => {
           <Column
             key={`col_${i}`}
             header={HEADERS[i]}
+            columnInd = {i}
             columnTasks={columnTasks}
             handleDeleteTask={handleDeleteTask}
-            handleMoveTaskLeft={handleMoveTaskLeft}
-            handleMoveTaskRight={handleMoveTaskRight}
+            // handleMoveTaskLeft={handleMoveTaskLeft}
+            // handleMoveTaskRight={handleMoveTaskRight}
             disableLeft={i === 0}
             disableRight={i === tasks.length - 1}
           />
         ))}
       </Board>
+          <DrawBar />
     </main>
   );
 };

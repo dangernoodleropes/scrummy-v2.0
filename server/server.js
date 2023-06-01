@@ -1,15 +1,53 @@
 const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
+const app = express();
+const app2 = express();
+const server = require("http").createServer(app);
+const server2 = require("http").createServer(app2);
+const io = require('socket.io')(server);
+const io2 = require('socket.io')(server2);
+const mongoose = require('mongoose');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const { disconnect } = require("process");
+app.use(express.json());
+app2.use(express.json());
+app2.use('/public', express.static(path.join(__dirname,'../src/jsForWebsockets')));
 
-const app = express();
-const server = http.Server(app);
-const io = socketIO(server, {
-  pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
-  pingInterval: 3000, // how many ms before sending a new ping packet
+// const io = require('socket.io')(server, {
+//   pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
+//   pingInterval: 3000, 
+// });
+
+// const io = socketIO(server, {
+//   pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
+//   pingInterval: 3000, // how many ms before sending a new ping packet
+// });
+
+mongoose.connect('mongodb+srv://delectable999:xazzy7-wowGuh-hevwus@scrummy2.aabnqgo.mongodb.net/');
+const db = mongoose.connection;
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', (err) => {// 連線異常
+  console.error(err);
 });
+db.once('open', (db) => {// 連線成功
+  console.log('Connected to MongoDB');
+}); 
+
+const tasksDBSchema = new mongoose.Schema({
+  madeBy: String,
+  content: String,
+  taskeID: String,
+});
+
+const projectDBSchema = new mongoose.Schema({
+  title: String,
+  users: String,
+  tasks: String,
+});
+const tasksDB = mongoose.model('tasksDB', tasksDBSchema);
+
+
+
 
 // temp storage to store tasks
 let storage = [[], [], [], []];
@@ -132,13 +170,13 @@ const generateUniqueAnonName = () => {
   return anonName;
 };
 
-// Serve static files in the /dist folder
+
 app.use('/', express.static(path.join(__dirname, '../dist')));
 app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
+app2.get('/excalibur', (req, res) => {
+  res.sendFile(path.join(__dirname, "../src/excalibur.html"));
+});
 
-// SocketIO listeners
-// socket refers to the client
-// io refers this server
 io.on('connection', (socket) => {
   // Create anonName upon client connection and store anonName in anonNamesObj
   let anonName;
@@ -166,33 +204,45 @@ io.on('connection', (socket) => {
     const disconnectedUser = anonNamesObj[socket.id];
     delete anonNamesObj[socket.id];
     // emit current online users to frontend
-    io.emit('user-disconnected', socket.id);
-    // console.log(
-    //   `A client has disconnected ${socket.id} with UPDATED anonNamesList`,
-    //   anonNamesObj
-    // );
-    // console.log(
-    //   `A client has disconnected ${socket.id} with UPDATED anonNamesArr`,
-    //   anonNamesArr
-    // );
+    // io.emit('user-disconnected', socket.id);
   });
+
+  const storageObj = {};
+
+
+  ////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////
+  socket.on('card-move', (uuid, num, cardFromInd) => {
+    taskIndex = storage[storageObj[uuid].arrayIndex].findIndex((task) => task.uuid === uuid);
+    let cacheObj = storage[storageObj[uuid].arrayIndex].splice(taskIndex, 1)[0];
+    storageObj[uuid].arrayIndex = num;
+    storage[num].push(cacheObj);
+    isStorageChanged = true;
+  });
+  socket.on('clickColor', (string)=>{
+    io2.emit('clickColorReturn', string);
+  });
+  socket.on('EraserColor', (str, num) => {
+    io2.emit('EraserColorReturn', str, num);
+  })
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
   // Listener for the 'greeting-from-client'
   socket.on('add-task', (content) => {
     // Assign a unique id for the task
     const uuid = uuidv4();
-
     //store it to the first index of storage (TO DO column)
-    storage[0].push({
+    let cacheObj = {
       author: anonName,
       content,
       uuid: uuid,
-    });
-    io.emit('add-task', {
-      author: anonName,
-      content,
-      uuid: uuid,
-    });
+      arrayIndex: 0,
+      reviewedBy: '',
+    };
+    storage[0].push(cacheObj);
+    storageObj[uuid] = cacheObj;
+    isStorageChanged = true;
   });
 
   //Listener for 'delete-message'
@@ -204,75 +254,35 @@ io.on('connection', (socket) => {
     io.emit('delete-task', uuid);
   });
 
-  //Listener for 'next'
-  socket.on('move-task-right', (uuid) => {
-    let foundTask = null;
-    let foundColumnIndex;
-    // find the task with the matching UUID and its current column index
-    for (let i = 0; i < storage.length; i++) {
-      // store current column
-      const column = storage[i];
-      // store index if uuid is found
-      const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-      // if match was found and in the 2nd to last column (COMPLETE)...
-      if (taskIndex !== -1 && i === storage.length - 2) {
-        // remove the task at the specified index from the column array
-        foundTask = column.splice(taskIndex, 1)[0];
-        // create a current reviewer in storage
-        foundTask.reviewedBy = anonNamesObj[socket.id];
-        foundColumnIndex = i;
-        break;
-      }
-      // if match was found and not in the last column...
-      else if (taskIndex !== -1 && i !== storage.length - 1) {
-        // remove the task at the specified index from the column array
-        foundTask = column.splice(taskIndex, 1)[0];
-        foundColumnIndex = i;
-        break;
-      }
-    }
-    if (foundTask !== null) {
-      // push foundTask into next column in storage
-      storage[foundColumnIndex + 1].push(foundTask);
-    }
-    io.emit('move-task-right', { uuid, reviewerId: socket.id });
-  });
-
-  //Listener for 'previous'
-  socket.on('move-task-left', (uuid) => {
-    let foundTask = null;
-    let foundColumnIndex;
-    // find the task with the matching UUID and its current column index
-    for (let i = 0; i < storage.length; i++) {
-      // store current column
-      const column = storage[i];
-      // store index if uuid is found
-      const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-      // if match was found and in the last column (REVIEWED)...
-      if (taskIndex !== -1 && i == storage.length - 1) {
-        // remove the task at the specified index from the column array
-        foundTask = column.splice(taskIndex, 1)[0];
-        // delete the reviewer
-        delete foundTask.reviewedBy;
-        foundColumnIndex = i;
-        break;
-      }
-      // if match was found and not in the first column...store result and column index
-      else if (taskIndex !== -1 && i !== 0) {
-        // remove the task at the specified index from the column array
-        foundTask = column.splice(taskIndex, 1)[0];
-        foundColumnIndex = i;
-        break;
-      }
-    }
-    if (foundTask !== null) {
-      // push foundTask into previous column in storage
-      storage[foundColumnIndex - 1].push(foundTask);
-    }
-    io.emit('move-task-left', uuid);
-  });
 });
 
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+let serverUpdate = setInterval(mainUpdate, 1000/60);
+var isStorageChanged = false;
+function mainUpdate(){ // 更新 玩家 資訊 Updating the storage information
+  if(isStorageChanged === true){ // 如果玩家player 資料有變動才廣播更新
+      io.emit('playersDataUpdate', storage);
+      isStorageChanged = false;
+      console.log(storage);
+  }
+}
+////////////////////////////////////////////////////////////////////////
+////////////////////////////For Excalibur///////////////////////////////
+io2.on('connection', (socket) => {
+  console.log('Drawer connected!');
+  socket.on('draw000', (obj)=>{
+    io2.emit('draw000Return', obj);
+  })
+  socket.on('draw001', (obj)=>{
+    io2.emit('draw001Return', obj);
+  })
+});
+
+
+
+
+////////////////////////////For Excalibur///////////////////////////////
+////////////////////////////////////////////////////////////////////////
 server.listen(3000, () => console.log('The server is running at port 3000'));
+server2.listen(3351, () => console.log('The server is running at port 3351'))

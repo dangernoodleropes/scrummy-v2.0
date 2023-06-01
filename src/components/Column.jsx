@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TaskCard from './TaskCard';
 import styled from 'styled-components';
 
@@ -12,10 +12,6 @@ const Column = ({
   header,
   columnTasks,
   handleDeleteTask,
-  handleMoveTaskLeft,
-  handleMoveTaskRight,
-  disableLeft,
-  disableRight,
 }) => {
   return (
     <div>
@@ -26,10 +22,6 @@ const Column = ({
             key={task.uuid}
             {...task}
             handleDeleteTask={handleDeleteTask}
-            handleMoveTaskLeft={handleMoveTaskLeft}
-            handleMoveTaskRight={handleMoveTaskRight}
-            disableLeft={disableLeft}
-            disableRight={disableRight}
           />
         ))}
       </div>

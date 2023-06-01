@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collab Scrum 2.0</title>
+  </head>
+  <body>
+    <div>
+      <canvas id="board000" width = '1500' height = '600' style = " background-color: rgba(255, 255, 255, 1); overflow-y: scroll; overflow-x: scroll;"></canvas>
+    </div>
+
+
+
+
+    <script src="/public/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3351');
+        const board000 = document.getElementById('board000');
+        const ctx = board000.getContext("2d");
+
+        
+        var prevX;  
+        var prevY;  
+        var pensColor = 'rgba(50, 50, 50, 0.8)';
+        var pensThickness = 2;
+        var isEraser = false;
+        function draw (x, y, pColor, thickness){
+          ctx.beginPath();
+          ctx.moveTo(prevX, prevY); 
+          ctx.lineTo(x, y); 
+          ctx.strokeStyle = pColor;
+          ctx.lineWidth = thickness;
+          ctx.stroke();  
+          ctx.closePath(); 
+          prevX = x;   
+          prevY = y;   
+        }
+        function drawCircle(x, y, radius, pColor, thickness) {
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, 2 * Math.PI);
+          ctx.strokeStyle = pColor;
+          ctx.lineWidth = thickness;
+          ctx.stroke();
+          ctx.closePath();
+        }
+
+        const handleMouseMove = (event) => {
+            socket.emit('draw001', {x: event.clientX, y: event.clientY});
+        };
+        socket.on('draw001Return', (obj) => {
+          if(isEraser === false){
+            draw(obj.x, obj.y, pensColor, pensThickness);
+          }
+          else if(isEraser === true){
+            drawCircle(obj.x, obj.y, 5, pensColor, pensThickness);
+          }
+        });          
+        socket.on('draw000Return', (obj) => {
+          prevX = obj.x;
+          prevY = obj.y;
+        });
+        socket.on('clickColorReturn', (str) => {
+          pensColor = str;
+          pensThickness = 2;
+          isEraser = false;
+        });
+        socket.on('EraserColorReturn', (str, num) => {
+          pensColor = str;
+          pensThickness = num;
+          isEraser = true;
+        });
+        const handleMouseUp = () => {
+          window.removeEventListener('mousemove', handleMouseMove);
+        };
+
+        board000.addEventListener('mousedown', (event) => {
+          socket.emit('draw000', {x: event.clientX, y: event.clientY});
+          window.addEventListener('mousemove', handleMouseMove);
+          window.addEventListener('mouseup', handleMouseUp);
+        });
+    </script>
+  </body>
+</html>

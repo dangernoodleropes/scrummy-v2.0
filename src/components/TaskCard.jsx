@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { socket } from '../socket';
 
 const Card = styled.div`
   border: 2px solid black;
@@ -69,13 +70,93 @@ const TaskCard = ({
   content,
   reviewedBy,
   handleDeleteTask,
-  handleMoveTaskLeft,
-  handleMoveTaskRight,
-  disableLeft = false,
-  disableRight = false,
 }) => {
+
+  const [dragging, setDragging] = useState(false);
+  const [ghostPosition, setGhostPosition] = useState({ x: 0, y: 0 });
+  const windowWidth = window.innerWidth;    
+
+  useEffect(() => {
+    var newX;
+    var newY;
+
+    const handleMouseMove = (event) => {
+      if (!dragging) return;
+      ///////waiting for fixing the minus width/2////////
+      const newXghost = event.clientX - 0.12*window.innerWidth;
+      const newYghost = event.clientY - 60;
+      newX = event.clientX
+      newY = event.clientY
+      console.log({ x: newX, y: newY })
+      setGhostPosition({ x: newXghost, y: newYghost });
+    };
+
+    const handleMouseUp = () => {
+      setDragging(false);
+      if(newX > 0.75*window.innerWidth){
+        socket.emit('card-move', uuid, 3);
+      }
+      else if(newX > 0.5*window.innerWidth && newX <= 0.75*window.innerWidth){
+        socket.emit('card-move', uuid, 2);
+      }
+      else if(newX > 0.25*window.innerWidth && newX <= 0.5*window.innerWidth){
+        socket.emit('card-move', uuid, 1);
+      }
+      else if(newX <= 0.25*window.innerWidth){
+        socket.emit('card-move', uuid, 0);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [dragging]);
+
+  const handleMouseDown = (event) => {
+    setDragging(true);
+  };
+  
   return (
-    <Card>
+    <>
+    {dragging && (
+      <Card
+        style={{
+          left: ghostPosition.x,
+          top: ghostPosition.y,
+          cursor: 'grabbing',
+          position: 'fixed',
+          opacity: 0.6,
+          width: 0.24*window.innerWidth
+        }}
+      >
+        <span>{content}</span>
+        <div>
+          <span>author:&nbsp;</span>
+          <Name>{author}</Name>
+        </div>
+  
+        {reviewedBy && (
+          <div>
+            <span>reviewed by:&nbsp;</span>
+            <Name>{reviewedBy}</Name>
+          </div>
+        )}
+        <ButtonContainer>
+          <DeleteButton>
+            delete
+          </DeleteButton>
+        </ButtonContainer>
+      </Card>
+    )}
+    <Card style={{
+      cursor: dragging ? 'grabbing' : 'grab'
+      }}  
+      onMouseDown={(event)=>handleMouseDown(event, uuid)}
+    >
       <span>{content}</span>
       <div>
         <span>author:&nbsp;</span>
@@ -90,34 +171,12 @@ const TaskCard = ({
       )}
 
       <ButtonContainer>
-        <Button disabled={disableLeft} onClick={() => handleMoveTaskLeft(uuid)}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewBox="0 -960 960 960"
-            width="24"
-          >
-            <path d="M360-200 80-480l280-280 42 42-208 208h686v60H194l208 208-42 42Z" />
-          </svg>
-        </Button>
-        <Button
-          disabled={disableRight}
-          onClick={() => handleMoveTaskRight(uuid)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height="24"
-            viewBox="0 -960 960 960"
-            width="24"
-          >
-            <path d="m600-200-42-42 208-208H80v-60h686L558-718l42-42 280 280-280 280Z" />
-          </svg>
-        </Button>
         <DeleteButton onClick={() => handleDeleteTask(uuid)}>
           delete
         </DeleteButton>
       </ButtonContainer>
     </Card>
+    </>
   );
 };
 
