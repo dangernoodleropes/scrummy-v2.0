@@ -179,6 +179,7 @@ const App = () => {
       socket.off('delete-task', onDeleteTask);
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
+      socket.off('updating-name', onUpdateName);
     };
   }, [allUsers]);
 
