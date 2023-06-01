@@ -4,6 +4,7 @@ import OnlineUsers from './components/OnlineUsers';
 import CreateCard from './components/CreateCard';
 import Column from './components/Column';
 import styled from 'styled-components';
+import Login from './components/Login';
 
 const Header = styled.div`
   display: flex;
@@ -89,8 +90,10 @@ const App = () => {
       });
     }
 
-    //function used to handle the event when a new task is added
-    //creates a deep copy of the tasks array, adds the 'newTasks' to the first sub-array of 'newTasks'and updates the 'tasks' state variable with the modified array
+    function onUpdateName(usersObj) {
+      setAllUsers(usersObj)
+    }
+
     function onAddTask(newTask) {
       setTasks((tasks) => {
         const newTasks = structuredClone(tasks);
@@ -217,6 +220,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('move-task-left', onMoveTaskLeft);
     socket.on('move-task-right', onMoveTaskRight);
+    socket.on('updating-name', onUpdateName);
     socket.on('add-task-comment', onAddComment);
 
     // Clean up the event listeners when the component unmounts
@@ -229,6 +233,7 @@ const App = () => {
       socket.off('delete-task', onDeleteTask);
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
+      socket.off('updating-name', onUpdateName);
       socket.off('add-task-comment', onAddComment);
 
     };
@@ -276,8 +281,7 @@ const App = () => {
               Save Project
           </ProjectButton>
         </Container>
-       
-        
+        <Login user={user} setUser={setUser}/>
         <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
