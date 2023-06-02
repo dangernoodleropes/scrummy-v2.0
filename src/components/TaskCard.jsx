@@ -70,9 +70,12 @@ const DeleteButton = styled.button`
   }
 `;
 
+//TODO: add css styling 
+const Dropdown = styled.select``;
+
 const Comments = styled.input`
 
-`
+`;
 
 //form creation on TaskCard
 const TaskForm = styled.form``;
@@ -90,23 +93,21 @@ const TaskCard = ({
   comments,
   reviewedBy,
   handleDeleteTask,
-  handleMoveTaskLeft,
-  handleMoveTaskRight,
-  handleDeleteComment,
-  handleAddComment,
-  disableLeft = false,
-  disableRight = false,
+  handleOptionChange,
+  assignee,
 }) => {
 
   const [dragging, setDragging] = useState(false);
   const [ghostPosition, setGhostPosition] = useState({ x: 0, y: 0 });
   const windowWidth = window.innerWidth;    
   const [text, setText] = useState('');
+  const [newArr, setNewArr] = useState([]);
+  const [selectedOption, setSelectedOption] = useState('');
 
   useEffect(() => {
+    
     var newX;
     var newY;
-
 
     const handleMouseMove = (event) => {
       if (!dragging) return;
@@ -145,7 +146,10 @@ const TaskCard = ({
   }, [dragging]);
 
   const handleMouseDown = (event) => {
-    setDragging(true);
+    const isButtonOrInput = ['BUTTON', 'INPUT', 'TASKFORM', 'DROPDOWN'].includes(event.target.tagName);
+    if (!isButtonOrInput) {
+      setDragging(true);
+    }
   };
 
 
@@ -163,6 +167,12 @@ const handleSubmit = e => {
 
 const handleDelete = e => {
   
+}
+
+const handleSubmitAssignee = e => {
+  e.preventDefault();
+  console.log('assigneeassigneeassigneeassignee', selectedOption);
+  handleOptionChange(selectedOption);
 }
 
   return (
@@ -231,6 +241,28 @@ const handleDelete = e => {
           />
           <button type="submit">Save</button>
         </TaskForm>
+{/* 
+        <TaskForm onSubmit={handleSubmitAssignee}>
+        <div>
+          <label htmlFor="onlineUsers-dropdown">Assignee:</label>
+          <select
+            id="onlineUsers-dropdown"
+            value={selectedOption}
+            onChange={(e) => setSelectedOption(e.target.value)}
+          >
+            <option value="">Select</option>
+            {assignee && assignee.map((name, index) => {
+              return (
+              <option key={index} value={name}>
+                {name}
+              </option>
+              )
+            })}
+          </select>
+        </div>
+        <button type="submit">Save</button>
+      </TaskForm> */}
+        
       </div>
 
       {reviewedBy && (

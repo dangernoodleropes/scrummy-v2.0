@@ -17,6 +17,9 @@ const Column = ({
   handleAddComment,
   disableLeft,
   disableRight,
+  handleSubmitAssignee,
+  handleOptionChange,
+  assignee,
 }) => {
   return (
     <div>
@@ -33,6 +36,9 @@ const Column = ({
             disableRight={disableRight}
             handleDeleteComment={handleDeleteComment}
             handleAddComment={handleAddComment}
+            handleSubmitAssignee={handleSubmitAssignee}
+            handleOptionChange={handleOptionChange}
+            assignee={assignee}
           />
         ))}
       </div>

@@ -63,10 +63,19 @@ const App = () => {
   var [tasks, setTasks] = useState([[], [], [], []]);
   const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
+  var [assignee, setAssignee] = useState([]);
 
 
  //useEffect hook is used to define  a side effect that will be executed after the component renders  
   useEffect(() => {
+
+    function updateOnlineUser (arr){        
+      setAssignee((assignee) => {
+        assignee = arr;
+        return assignee; 
+      })
+    }
+
     function storageUpdate(storage){
       setTasks ((tasks) => {
         tasks = storage;
@@ -111,6 +120,7 @@ const App = () => {
       });
     }
 
+
     //function used to handle the event when a task is deleted based on UUID 
     //creates a deep copy of 'tasks' and filtered out the tasks with UUID from each column and updates the 'tasks' state 
     function onDeleteTask(uuid) {
@@ -122,104 +132,6 @@ const App = () => {
       });
     }
 
-
-    // function onMoveTaskLeft(uuid) {
-    //   setTasks((tasks) => {
-    //     let newTasks = structuredClone(tasks);
-    //     let foundTask = null;
-    //     let foundColumnIndex;
-    //     // find the task with the matching UUID and its current column index
-    //     for (let i = 0; i < newTasks.length; i++) {
-    //       // store current column
-    //       const column = newTasks[i];
-    //       // store index if uuid is found
-    //       const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-    //       // if match was found and in the last column (REVIEWED)...
-    //       if (taskIndex !== -1 && i == newTasks.length - 1) {
-    //         // remove the task at the specified index from the column array
-    //         foundTask = column.splice(taskIndex, 1)[0];
-    //         // delete the reviewer
-    //         delete foundTask.reviewedBy;
-    //         foundColumnIndex = i;
-    //         break;
-    //       }
-    //       // if match was found and not in the first column...store result and column index
-    //       else if (taskIndex !== -1 && i !== 0) {
-    //         // remove the task at the specified index from the column array
-    //         foundTask = column.splice(taskIndex, 1)[0];
-    //         foundColumnIndex = i;
-    //         break;
-    //       }
-    //     }
-    //     if (foundTask !== null) {
-    //       // push foundTask into previous column in storage
-    //       newTasks[foundColumnIndex - 1].push(foundTask);
-    //     }
-    //     return newTasks;
-    //   });
-    // }
-
-
-    // function onMoveTaskRight({ uuid, reviewerId }) {
-    //   setTasks((tasks) => {
-    //     let newTasks = structuredClone(tasks);
-    //     let foundTask = null;
-    //     let foundColumnIndex;
-    //     // find the task with the matching UUID and its current column index
-    //     for (let i = 0; i < newTasks.length; i++) {
-    //       // store current column
-    //       const column = newTasks[i];
-    //       // store index if uuid is found
-    //       const taskIndex = column.findIndex((task) => task.uuid === uuid);
-
-    //       // if match was found and in the 2nd to last column (COMPLETE)...
-    //       if (taskIndex !== -1 && i === newTasks.length - 2) {
-    //         // remove the task at the specified index from the column array
-    //         foundTask = column.splice(taskIndex, 1)[0];
-    //         // create a current reviewer in storage
-    //         console.log('##### REVIEWED BY ######');
-    //         console.log(reviewerId);
-    //         foundTask.reviewedBy = allUsers[reviewerId];
-    //         foundColumnIndex = i;
-    //         break;
-    //       }
-    //       // if match was found and not in the last column...
-    //       else if (taskIndex !== -1 && i !== newTasks.length - 1) {
-    //         // remove the task at the specified index from the column array
-    //         foundTask = column.splice(taskIndex, 1)[0];
-    //         foundColumnIndex = i;
-    //         break;
-    //       }
-    //     }
-    //     if (foundTask !== null) {
-    //       // push foundTask into next column in storage
-    //       newTasks[foundColumnIndex + 1].push(foundTask);
-    //     }
-    //     return newTasks;
-    //   });
-    // }
-
-
-
-    // TODO:create function onAddComment, used to handle when new comment is added
-
-    // function onAddComment({uuid, content}) {
-    //   setTasks((tasks) => {
-    //     let newTasks = structuredClone(tasks);
-    //     for (let i = 0; i < newTasks.length; i++){
-    //       for (let j = 0; j < newTasks[i].length; j++){
-    //         if (newTasks[i][j].uuid === uuid){
-    //           newTasks[i][j].comments.push(content);
-    //         }
-    //       }
-    //     }
-    //     return newTasks;
-    //   });
-    // }
-  
-
-
     // Register event listeners
     socket.on('load-tasks', onLoadTasks);
     socket.on('user-connected', onUserConnected);
@@ -228,7 +140,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('playersDataUpdate', storageUpdate);
     socket.on('updating-name', onUpdateName);
-    // socket.on('add-task-comment', onAddComment);
+    socket.on('aaa3', updateOnlineUser);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -239,17 +151,9 @@ const App = () => {
       socket.off('add-task', onAddTask);
       socket.off('delete-task', onDeleteTask);
       socket.off('updating-name', onUpdateName);
-      // socket.off('add-task-comment', onAddComment);
+      socket.off('aaa3', updateOnlineUser);
     };
   }, [allUsers]);
-
-  // function handleColorSelect(){
-  //   socket.emit('colorClick!', colorClick);
-  // }
-
-
-
-
 
   function handleAddTask(content) {
     socket.emit('add-task', content);
@@ -259,14 +163,6 @@ const App = () => {
     socket.emit('delete-task', uuid);
   }
 
-  // function handleMoveTaskLeft(uuid) {
-  //   socket.emit('move-task-left', uuid);
-  // }
-
-  // function handleMoveTaskRight(uuid) {
-  //   socket.emit('move-task-right', uuid);
-  // }
-
   // TODO:add func handleAddComment
   function handleAddComment(content, uuid) {
     socket.emit('add-task-comment', content, uuid);
@@ -274,6 +170,11 @@ const App = () => {
 
   function handleDeleteComment(uuid, commentid) {
     socket.emit('delete-comment', uuid, commentid)
+  }
+
+  function handleSubmitAssignee(){
+    e.preventDefault();
+    socket.emit('KahlieNeedArray');
   }
 
   function handleProject(id) {
@@ -310,12 +211,11 @@ const App = () => {
             columnInd = {i}
             columnTasks={columnTasks}
             handleDeleteTask={handleDeleteTask}
-            // handleMoveTaskLeft={handleMoveTaskLeft}
-            // handleMoveTaskRight={handleMoveTaskRight}
             handleAddComment={handleAddComment}
             handleDeleteComment={handleDeleteComment}
-            disableLeft={i === 0}
-            disableRight={i === tasks.length - 1}
+            handleSubmitAssignee={handleSubmitAssignee}
+            assignee={assignee}
+            // handleOptionChange={handleOptionChange}
           />
         ))}
       </Board>

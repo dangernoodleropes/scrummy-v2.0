@@ -46,6 +46,7 @@ app.use('/users', userRouter);
 // temp storage to store tasks
 var storage = [[], [], [], []];
 var storageObj = {};
+var onlineUserArr = [];
 
 // anon names storage object
 const anonNamesObj = {};
@@ -97,9 +98,13 @@ io.on('connection', (socket) => {
     anonName = generateUniqueAnonName();
     // Store anonName in anonNameObj
     anonNamesObj[socket.id] = anonName;
+    onlineUserArr.push(anonNamesObj[socket.id]);
+    console.log("3345678");
+    console.log(onlineUserArr);
+    io.emit('aaa3', onlineUserArr);
     // Store anonName in anonNameArr
     anonNamesArr.push(anonName);
-    console.log(socket.id, anonName)
+    // console.log(socket.id, anonName)
   }
 
   // client logs in
@@ -129,13 +134,18 @@ io.on('connection', (socket) => {
     // io.emit('user-disconnected', socket.id);
   });
 
+  
 
-
- 
   socket.on('card-move', (uuid, num) => {
       taskIndex = storage[storageObj[uuid].arrayIndex].findIndex((task) => task.uuid === uuid);
       let cacheObj = storage[storageObj[uuid].arrayIndex].splice(taskIndex, 1)[0];
       storageObj[uuid].arrayIndex = num;
+      if(num === 3){
+        cacheObj.reviewedBy = anonNamesObj[socket.id];
+      }
+      else {
+        cacheObj.reviewedBy = '';
+      }
       storage[num].push(cacheObj);
       isStorageChanged = true;
   });
